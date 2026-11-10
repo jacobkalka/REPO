@@ -1,0 +1,9 @@
+node_modules/
+dist/
+tools/.cache/
+data/
+*.log
+.DS_Store
+test-results/
+tests/e2e/out/
+.vite/

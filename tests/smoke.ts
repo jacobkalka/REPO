@@ -1,0 +1,27 @@
+import { startServer } from '../server/src/index';
+import { Bot, sleep } from './helpers/bot';
+const h = await startServer({ port: 0, dbFile: ':memory:', devMode: true, quiet: true });
+const url = `ws://127.0.0.1:${h.port}/ws`;
+const a = await new Bot(url, 'Alpha').connect();
+console.log('welcome', a.id, 'currency', a.profile?.currency);
+a.send({ t: 'create', mode: 'solo' });
+await a.waitFor('room');
+console.log('room', a.room?.code, a.room?.mode);
+a.send({ t: 'start' });
+const mi = await a.waitFor('mission');
+console.log('mission', mi.info.map, 'quota', mi.info.quota, 'players', mi.info.players.length);
+await a.waitFor('mstate');
+console.log('props', a.mstate?.props.length, 'enemies', a.mstate?.enemies.length);
+await a.idle(4.5);
+console.log('snaps received', a.snaps, 'snapshot props', a.snap?.props.length, 'enemies', a.snap?.enemies.length);
+// walk out of the lift
+const L = a.level!;
+await a.walkTo([a.pos[0], a.pos[1], L.rooms[0].z0 + 1.5], 3);
+console.log('pos after walk', a.pos.map(n=>n.toFixed(2)), 'server pos', a.snap?.players[0].p.map(n=>n.toFixed(2)));
+console.log('corrections', a.msgs.filter(m=>m.t==='correct').length, 'errors', a.errors.map(e=>(e as any).msg));
+const evs = a.events.map(e=>e.k); console.log('event kinds', [...new Set(evs)].join(','));
+a.send({ t: 'dev', cmd: 'quota', args: [] });
+await sleep(300);
+console.log('lift', a.events.filter(e=>e.k==='lift').map((e:any)=>e.l.state).join('>'));
+await h.close();
+process.exit(0);

@@ -1,0 +1,49 @@
+{
+  "name": "salvage-shift",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Salvage Shift — a cooperative first-person horror extraction game (browser client + authoritative Node server).",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "dev": "node tools/dev.mjs",
+    "dev:server": "tsx watch --clear-screen=false server/src/index.ts",
+    "dev:client": "vite",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build",
+    "build:server": "node tools/build-server.mjs",
+    "start": "node --no-warnings=ExperimentalWarning dist/server/index.js",
+    "assets": "node tools/fetch-assets.mjs",
+    "creatures": "tsx tools/build-creatures.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:mp": "vitest run tests/integration",
+    "e2e": "node tests/e2e/run.mjs"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "0.21.0",
+    "three": "0.187.0",
+    "ws": "8.22.2"
+  },
+  "devDependencies": {
+    "@fontsource/barlow": "5.3.0",
+    "@fontsource/barlow-condensed": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
+    "@gltf-transform/functions": "4.5.1",
+    "@types/node": "22.20.5",
+    "@types/three": "0.187.0",
+    "@types/ws": "8.18.2",
+    "esbuild": "0.28.2",
+    "meshoptimizer": "1.3.0",
+    "sharp": "0.35.5",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vite": "7.3.8",
+    "vitest": "4.1.12"
+  }
+}
