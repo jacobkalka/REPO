@@ -127,7 +127,8 @@ export type GameEvent =
   | { k: 'use'; id: number; item: string; target?: number }
   | { k: 'revive'; id: number; by: number; progress: number }
   | { k: 'impulse'; id: number; v: V3 }
-  | { k: 'tube'; id: number; sent: number; value: number };
+  | { k: 'tube'; id: number; sent: number; value: number }
+  | { k: 'ping'; by: number; p: V3 };
 
 export interface MissionResultPlayer {
   id: string; name: string; netId: number;
@@ -185,6 +186,7 @@ export type C2S =
   | { t: 'toLobby' }
   | { t: 'abandon' }
   | { t: 'spectate'; target: number }
+  | { t: 'mark'; p: V3 }
   | { t: 'dev'; cmd: string; args: string[] };
 
 export type S2C =

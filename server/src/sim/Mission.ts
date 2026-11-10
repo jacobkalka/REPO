@@ -652,6 +652,13 @@ export class Mission {
         if (lvl > 0.15) this.noise(pl.eye, 0.25 + lvl * 0.5, 'voice', pl.netId);
         return;
       }
+      case 'mark': {
+        if (this.time - (pl.lastPingAt ?? -9) < 1.2 || !msg.p?.every(Number.isFinite)) return;
+        pl.lastPingAt = this.time;
+        if (dist(pl.eye, msg.p) > 40) return;
+        this.emit({ k: 'ping', by: pl.netId, p: msg.p });
+        return;
+      }
       case 'abandon':
         if (m.id === this.room.hostId) this.finish(false, 'The contract was abandoned.');
         return;
@@ -1345,6 +1352,13 @@ export class Mission {
       case 'event': this.director.trigger(a[0] ?? 'blackout'); return reply('event ' + (a[0] ?? 'blackout'));
       case 'unknown': this.director.summonUnknown(pl); return;
       case 'tp': { const t = this.players.get(Number(a[0])); if (t) { pl.epoch = (pl.epoch + 1) & 0xff; pl.accepted = [...t.pos]; pl.member.session?.send({ t: 'correct', p: [...t.pos], v: [0, 0, 0], epoch: pl.epoch }); } return; }
+      case 'goto': {
+        const p: V3 = [Number(a[0]), Number(a[1]), Number(a[2])];
+        if (!p.every(Number.isFinite)) return reply('goto x y z');
+        pl.epoch = (pl.epoch + 1) & 0xff; pl.accepted = [...p]; pl.pos = [...p]; pl.airTop = p[1];
+        pl.member.session?.send({ t: 'correct', p, v: [0, 0, 0], epoch: pl.epoch });
+        return;
+      }
       case 'clear': this.ai.clear(); return reply('enemies cleared');
       case 'end': this.finish(a[0] === 'win', 'Ended from the developer console.'); return;
       case 'overtime': this.overtimeAt = this.time; return;

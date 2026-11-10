@@ -27,6 +27,7 @@ export class Session {
   profile: Profile | null = null;
   room: Room | null = null;
   rtt = 0;
+  pingSentAt = 0;
   lastRecv = Date.now();
   closed = false;
   readonly ip: string;
@@ -34,6 +35,7 @@ export class Session {
   readonly binBucket = new Bucket(75, 150);
   readonly chatBucket = new Bucket(2, 6);
   readonly econBucket = new Bucket(4, 10);
+  readonly voiceBucket = new Bucket(60, 90);
   violations = 0;
   bytesIn = 0;
   bytesOut = 0;

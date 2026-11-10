@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { GAME_VERSION, NET, PROTOCOL_VERSION } from '../../shared/constants';
-import { sanitizeName, type C2S } from '../../shared/protocol';
+import { BIN, sanitizeName, type C2S } from '../../shared/protocol';
 import { GameDatabase } from './db/Database';
 import { Economy, EconomyError, newProfile } from './economy/Economy';
 import { RoomManager } from './lobby/RoomManager';
@@ -95,6 +95,17 @@ export async function startServer(opts: { port?: number; dbFile?: string; devMod
       const buf = data as Buffer;
       s.bytesIn += buf.length;
       if (isBinary) {
+        if (buf.length && buf[0] === BIN.VOICE) {
+          // voice relay fallback: forward to the rest of the room, stamped with the sender's net id
+          if (!s.voiceBucket.take() || !s.room || !s.playerId || buf.length > 400) return;
+          const m = s.room.members.get(s.playerId);
+          if (!m) return;
+          const out = new Uint8Array(buf.length);
+          out.set(buf);
+          out[1] = m.netId;
+          for (const o of s.room.members.values()) if (o.id !== m.id && o.session && o.connected) o.session.sendBin(out);
+          return;
+        }
         if (!s.binBucket.take()) return s.violation('binary rate');
         if (s.room?.mission && s.playerId) {
           const m = s.room.members.get(s.playerId);
@@ -112,7 +123,7 @@ export async function startServer(opts: { port?: number; dbFile?: string; devMod
         else { log.error('handler error', msg.t, e); s.send({ t: 'err', code: 'server', msg: 'Something went wrong on the server.' }); }
       }
     });
-    ws.on('pong', () => { s.lastRecv = Date.now(); });
+    ws.on('pong', () => { s.lastRecv = Date.now(); if (s.pingSentAt) { const rtt = Date.now() - s.pingSentAt; s.rtt = s.rtt ? s.rtt * 0.7 + rtt * 0.3 : rtt; s.pingSentAt = 0; } });
     ws.on('close', () => {
       s.closed = true;
       sessions.delete(s);
@@ -214,7 +225,7 @@ export async function startServer(opts: { port?: number; dbFile?: string; devMod
     const now = Date.now();
     for (const s of sessions) {
       if (now - s.lastRecv > NET.TIMEOUT_MS) { log.debug('timeout', s.playerId); s.ws.terminate(); continue; }
-      try { s.ws.ping(); } catch { /* ignore */ }
+      try { s.pingSentAt = Date.now(); s.ws.ping(); } catch { /* ignore */ }
     }
   }, NET.HEARTBEAT_MS);
 

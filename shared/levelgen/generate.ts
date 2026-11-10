@@ -691,7 +691,7 @@ export class LevelGenerator {
     void inset;
     const cx = (carX0 + carX1) / 2, cz = (carZ0 + carZ1) / 2;
     const offs = [[-2.4, -0.6], [-0.8, 0.6], [0.8, -0.6], [2.4, 0.6]];
-    for (const [ox, oz] of offs) L.playerSpawns.push({ x: cx + ox, y: lift.y + 0.05, z: cz + oz, rotY: Math.PI });
+    for (const [ox, oz] of offs) L.playerSpawns.push({ x: cx + ox, y: lift.y + 0.05, z: cz + oz, rotY: 0 }); // yaw 0 faces -z (toward the gate)
     L.interactables.push({ id: L.interactables.length, kind: 'liftLever', room: lift.id, x: L.extraction.lever.x, y: L.extraction.lever.y, z: L.extraction.lever.z, rotY: Math.PI, sector: 0, target: -1, data: '' });
   }
 

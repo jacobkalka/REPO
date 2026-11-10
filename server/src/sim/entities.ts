@@ -60,6 +60,7 @@ export class MPlayer {
   useCounter = 0;
   lastNoiseAt = 0;
   lastVoiceAt = 0;
+  lastPingAt = -9;
   lastImpactReport = new Map<number, number>();
   // carrying
   owned = -1;
